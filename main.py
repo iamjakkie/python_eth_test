@@ -12,7 +12,7 @@ async def get_block_data(block_no:str = "latest"):
         "id": 1,
         "jsonrpc": "2.0",
         "method": "eth_getBlockByNumber",
-        "params": ['0x1b4', True]
+        "params": [block_no, False]
     }
     headers = {
         "accept": "application/json",
@@ -21,17 +21,31 @@ async def get_block_data(block_no:str = "latest"):
 
     async with aiohttp.ClientSession() as session:
         async with session.post(url, json=payload, headers=headers) as resp:
-            print(await resp.text())
+            resp_json = await resp.json()
+            res = resp_json["result"]
+            print(res["gasLimit"])
+            print(res["gasUsed"])
+            print(res["number"])
+            print(res["difficulty"])
+            print(res["totalDifficulty"])
 
-    # w3 = Web3(Web3.HTTPProvider(url))
 
-    # print(w3.eth.get_block(block_no))
+async def get_signature(provider: str, signature: str):
+    url = provider+signature
 
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url) as resp:
+            resp_json = await resp.json()
+            print(resp_json)
 
 
 
 async def main():
     await get_block_data()
+
+    provider_4byte = "https://www.4byte.directory/api/v1/signatures/?text_signature="
+    await get_signature(provider_4byte, "balanceOf()")
+
 
 if __name__ == "__main__":
     asyncio.get_event_loop().run_until_complete(main())
